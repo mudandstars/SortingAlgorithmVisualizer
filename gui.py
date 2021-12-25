@@ -68,8 +68,14 @@ class MainScreen(BoxLayout):
             return self.selection_sort()
         elif self.selected_algorithm == "Insertion Sort":
             return self.insertion_sort()
+        elif self.selected_algorithm == "Shellsort":
+            return self.shell_sort()
+        elif self.selected_algorithm == "Merge Sort":
+            return self.merge_sort()
         elif self.selected_algorithm == "Heapsort":
             return self.heapsort()
+        elif self.selected_algorithm == "Quicksort":
+            return self.quick_sort()
 
     def slider_moved(self):
         """
@@ -430,14 +436,55 @@ class MainScreen(BoxLayout):
             # go one step to the right and repeat
             i += 1
 
+    def shell_sort(self):
+        """
+        Shellsort algorithm augmented to also visualize the process.
+        :return: None
+        """
+        # use Ciura gap sequence
+        gaps = [701, 301, 132, 57, 23, 10, 4, 1]
+
+        self.indices = []  # i, old_ind, new_ind, old_val, new_val
+        self.i = 0
+
+        # this indicates rectangles that are about to be changed just before changing them
+        Clock.schedule_once(self.call_indicating)
+        Clock.schedule_once(self.call_redrawing, self.speed / 2)
+
+        # start with largest gap and work down to gap of 1
+        for gap in gaps:
+            offset = 0
+            # offset is iterating through the list by 1 step at a time
+            while offset < gap:
+                i = offset
+                # i is iterating through the list, starting with offset and incremented by the gap-value every iteration
+                while i < len(self.items):
+                    # the current value of list[i] is saved temporarily
+                    temp = self.items[i]
+                    j = i
+                    # j starts at i and decreases by the gap-value each iteration.
+                    # j serves to shift earlier gap-sorted elements up until the correct location for list[i] is found
+                    while j >= gap and self.items[j - gap] > temp:
+
+                        self.indices.append((offset, j - gap, j, self.items[j- gap], self.items[j]))
+                        print(gap)
+                        print(self.items)
+                        print(self.indices[-1])
+
+                        self.items[j] = self.items[j - gap]
+                        j -= gap
+                        self.items[j] = temp
+
+                    i += gap
+                offset += 1
+
     def heapsort(self):
         """
         Heapsort algorithm augmented to also visualize the process.
         :return: None
         """
-        global colors
         heapq._heapify_max(self.items)
-        self.count = 0
+        count = 0
         length = len(self.items)
         self.indices = []
         self.heap_history = []
@@ -451,9 +498,9 @@ class MainScreen(BoxLayout):
         Clock.schedule_once(self.call_change_heap, (2*self.speed)/3)
 
         new_ind = length - 1
-        while self.count < length:
-            self.count += 1
-            list_subdivision = length - self.count
+        while count < length:
+            count += 1
+            list_subdivision = length - count
 
             unsorted_part = self.items[:list_subdivision + 1]
             self.heap_history.append(unsorted_part)

@@ -31,3 +31,6 @@ def shell_sort(unsorted_list):
                 unsorted_list[j] = temp
                 i += gap
             offset += 1
+    return unsorted_list
+
+print(shell_sort([5,3,1,8,2]))
