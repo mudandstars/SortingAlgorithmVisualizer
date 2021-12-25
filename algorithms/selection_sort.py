@@ -1,3 +1,5 @@
+import math
+
 
 def selection_sort(unsorted_list):
     """
@@ -10,11 +12,13 @@ def selection_sort(unsorted_list):
     """
     start_unsorted = 0
 
-    while start_unsorted != len(unsorted_list):
-        smallest_element = math.inf
-        for i in range(start_unsorted, len(unsorted_list)):
+    while start_unsorted < len(unsorted_list):
+        smallest_element = unsorted_list[start_unsorted]
+        for i in range(start_unsorted + 1, len(unsorted_list)):
             if unsorted_list[i] < smallest_element:
-                smallest_element = element
+                smallest_element = unsorted_list[i]
+                unsorted_list[i] = unsorted_list[start_unsorted]
 
         unsorted_list[start_unsorted] = smallest_element
         start_unsorted += 1
+    return unsorted_list

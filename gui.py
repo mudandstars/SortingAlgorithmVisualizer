@@ -64,7 +64,9 @@ class MainScreen(BoxLayout):
 
     def call_algorithm(self):
 
-        if self.selected_algorithm == "Insertion Sort":
+        if self.selected_algorithm == "Selection Sort":
+            return self.selection_sort()
+        elif self.selected_algorithm == "Insertion Sort":
             return self.insertion_sort()
         elif self.selected_algorithm == "Heapsort":
             return self.heapsort()
@@ -373,6 +375,31 @@ class MainScreen(BoxLayout):
         store = self.items[old_ind]
         self.items[old_ind] = self.items[new_ind]
         self.items[new_ind] = store
+
+    def selection_sort(self):
+        """
+        Selection sort algorithm that is augmented to also visualize the process.
+        :return: None
+        """
+        self.indices = []  # i, old_ind, new_ind, old_val, new_val
+        self.i = 0
+        start_unsorted = 0
+
+        Clock.schedule_once(self.call_indicating)
+        Clock.schedule_once(self.call_redrawing, self.speed / 2)
+
+        while start_unsorted < len(self.items):
+            smallest_element = self.items[start_unsorted]
+            for i in range(start_unsorted + 1, len(self.items)):
+                if self.items[i] < smallest_element:
+                    self.indices.append((start_unsorted, start_unsorted, i, self.items[start_unsorted], self.items[i]))
+                    smallest_element = self.items[i]
+                    self.items[i] = self.items[start_unsorted]
+                    self.items[start_unsorted] = smallest_element
+
+            start_unsorted += 1
+
+    # todo: ends drawing process one step too early
 
     def insertion_sort(self):
         """
