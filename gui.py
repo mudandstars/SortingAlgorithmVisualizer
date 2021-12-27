@@ -77,12 +77,9 @@ class MainScreen(BoxLayout):
         elif self.selected_algorithm == "Heapsort":
             return self.heapsort()
         elif self.selected_algorithm == "Quicksort":
-            # Clock.schedule_once(self.call_indicating, self.speed / 2)
-            # Clock.schedule_once(self.call_redrawing, self.speed)
             self.indices = quick_sort(self.items)
             Clock.schedule_once(self.call_indicating)
-            Clock.schedule_once(self.call_redrawing, self.speed / 2)
-            print(self.items)
+            Clock.schedule_once(self.call_draw_change, self.speed / 2)
 
     def slider_moved(self):
         """
@@ -117,7 +114,8 @@ class MainScreen(BoxLayout):
         self.data_spacing = int(50 / self.slider_value)
         self.font_size_items = int(9 + (9 - (self.slider_value ** 0.6))) if self.slider_value <= 25 else 0
         self.offset_x = self.width / 10
-        # self.speed = 1 / self.slider_value
+        self.speed = 1 / self.slider_value
+        # todo: adjust speed
 
     def reset_lists(self):
         """
@@ -258,12 +256,7 @@ class MainScreen(BoxLayout):
 
         # disables the calling of the indicate_redrawing function in time
         if self.i == len(self.indices):
-            Clock.unschedule(self.indicate_redrawing)
-            Clock.unschedule(self.indicate_redrawing)
-            Clock.unschedule(self.draw_change)
-            self.draw_black_above_rectangles()
-            self.draw_done()
-            self.button_pressed = False
+            self.unschedule_drawing()
 
         # if cancel condition is not met, continue
         else:
@@ -322,6 +315,8 @@ class MainScreen(BoxLayout):
         :param dt: float (time interval that the function is called in)
         :return: None
         """
+        self.indicate_current_rect()
+
         if self.i == len(self.indices) - 1:
             self.unschedule_drawing()
         else:
@@ -340,33 +335,22 @@ class MainScreen(BoxLayout):
                 self.rectangles[old_ind] = Rectangle(pos=old_pos, size=old_size)
                 self.rectangles[new_ind] = Rectangle(pos=new_pos, size=new_size)
 
-    def draw_rectangles(self, dt):
-        """
-        Combines multiple methods to manage the visual drawing process.
-        :param dt: float (time interval that the function is called in)
-        :return: None
-        """
-        # draws on the board as long as conditions are met, else it ends the drawing process
-        self.indicate_current_rect()
-        self.draw_change()
-        # disables the calling of the indicate_redrawing function in time
-
     def unschedule_drawing(self):
         Clock.unschedule(self.indicate_redrawing)
-        Clock.unschedule(self.draw_rectangles)
+        Clock.unschedule(self.draw_change())
         self.draw_black_above_rectangles()
         self.draw_done()
         self.button_pressed = False
 
-    def call_redrawing(self, dt):
+    def call_draw_change(self, dt):
         """
         Method to call the drawing function. Necessary for Kivy time-dynamics-management.
         :param dt: float (time interval that the function is called in)
         :return: None
         """
-        Clock.schedule_interval(self.draw_rectangles, self.speed)
+        Clock.schedule_interval(self.draw_change, self.speed)
 
-    def call_redrawing_heap(self, dt):
+    def call_redraw_items(self, dt):
 
         Clock.schedule_interval(self.redraw_items, self.speed)
 
@@ -397,7 +381,7 @@ class MainScreen(BoxLayout):
         start_unsorted = 0
 
         Clock.schedule_once(self.call_indicating)
-        Clock.schedule_once(self.call_redrawing, self.speed / 2)
+        Clock.schedule_once(self.call_draw_change, self.speed / 2)
 
         while start_unsorted < len(self.items):
             smallest_element = self.items[start_unsorted]
@@ -411,7 +395,7 @@ class MainScreen(BoxLayout):
             start_unsorted += 1
 
     # todo: ends drawing process one step too early
-    # todo: indicate current_rect should come before indicate redrawing
+    # todo: still buggy when ending the process
     # todo: implement merge sort
 
     def insertion_sort(self):
@@ -421,7 +405,7 @@ class MainScreen(BoxLayout):
         """
         # this indicates rectangles that are about to be changed just before changing them
         Clock.schedule_once(self.call_indicating)
-        Clock.schedule_once(self.call_redrawing, self.speed / 2)
+        Clock.schedule_once(self.call_draw_change, self.speed / 2)
 
         i = 1
         while i < len(self.items):
@@ -450,7 +434,7 @@ class MainScreen(BoxLayout):
 
         # this indicates rectangles that are about to be changed just before changing them
         Clock.schedule_once(self.call_indicating)
-        Clock.schedule_once(self.call_redrawing, self.speed / 2)
+        Clock.schedule_once(self.call_draw_change, self.speed / 2)
 
         # start with largest gap and work down to gap of 1
         for gap in gaps:
@@ -490,7 +474,7 @@ class MainScreen(BoxLayout):
         self.heap_history = []
 
         # call redrawing
-        Clock.schedule_once(self.call_redrawing_heap)
+        Clock.schedule_once(self.call_redraw_items)
         # call indicating
         Clock.schedule_once(self.call_indicating, self.speed/3)
         # call change
