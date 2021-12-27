@@ -1,5 +1,5 @@
 
-def quick_sort(unsorted_list, start_index=1, end_index=-1):
+def quick_sort(unsorted_list, start_index=0, end_index=-1):
     """
     Sorts the list in place by choosing a pivot value and using pointers starting at the start and end of
     the (sub-) list(s). If pointers crossed, return new pivot value and recursively repeat this process until the
@@ -9,6 +9,8 @@ def quick_sort(unsorted_list, start_index=1, end_index=-1):
     :param end_index: int (end of list - 2 for first method call)
     :return: None
     """
+    if end_index == -1:
+        end_index = len(unsorted_list) - 1
     # recursively loop as long as the target range was not worked through yet
     if start_index < end_index:
         pivot = partition(unsorted_list, start_index, end_index)
@@ -29,8 +31,8 @@ def partition(unsorted_list, first_pointer, second_pointer):
     pivot = unsorted_list[(first_pointer + second_pointer) // 2]
 
     # left and right indices
-    i = first_pointer - 1
-    j = second_pointer + 1
+    i = first_pointer
+    j = second_pointer
 
     while True:
 

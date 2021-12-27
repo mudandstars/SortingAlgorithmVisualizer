@@ -38,7 +38,6 @@ class MainScreen(BoxLayout):
         self.rectangles = []
         self.labels = []
         self.indices = []  # (current_ind, old_ind, new_ind) for every change
-        self.alg_iter = {"Insertion Sort": 1, "Heapsort": 0}
 
         # initialize standard values
         self.slider_value = 22.5
@@ -64,6 +63,9 @@ class MainScreen(BoxLayout):
 
     def call_algorithm(self):
 
+        self.indices = []
+        self.i = 0
+
         if self.selected_algorithm == "Selection Sort":
             return self.selection_sort()
         elif self.selected_algorithm == "Insertion Sort":
@@ -71,11 +73,16 @@ class MainScreen(BoxLayout):
         elif self.selected_algorithm == "Shellsort":
             return self.shell_sort()
         elif self.selected_algorithm == "Merge Sort":
-            return self.merge_sort()
+            return merge_sort(self.items)
         elif self.selected_algorithm == "Heapsort":
             return self.heapsort()
         elif self.selected_algorithm == "Quicksort":
-            return self.quick_sort()
+            # Clock.schedule_once(self.call_indicating, self.speed / 2)
+            # Clock.schedule_once(self.call_redrawing, self.speed)
+            self.indices = quick_sort(self.items)
+            Clock.schedule_once(self.call_indicating)
+            Clock.schedule_once(self.call_redrawing, self.speed / 2)
+            print(self.items)
 
     def slider_moved(self):
         """
@@ -387,8 +394,6 @@ class MainScreen(BoxLayout):
         Selection sort algorithm that is augmented to also visualize the process.
         :return: None
         """
-        self.indices = []  # i, old_ind, new_ind, old_val, new_val
-        self.i = 0
         start_unsorted = 0
 
         Clock.schedule_once(self.call_indicating)
@@ -406,15 +411,14 @@ class MainScreen(BoxLayout):
             start_unsorted += 1
 
     # todo: ends drawing process one step too early
+    # todo: indicate current_rect should come before indicate redrawing
+    # todo: implement merge sort
 
     def insertion_sort(self):
         """
         Insertion sort algorithm that is augmented to also visualize the process.
         :return: None
         """
-        self.indices = []  # i, old_ind, new_ind, old_val, new_val
-        self.i = 0
-
         # this indicates rectangles that are about to be changed just before changing them
         Clock.schedule_once(self.call_indicating)
         Clock.schedule_once(self.call_redrawing, self.speed / 2)
@@ -443,9 +447,6 @@ class MainScreen(BoxLayout):
         """
         # use Ciura gap sequence
         gaps = [701, 301, 132, 57, 23, 10, 4, 1]
-
-        self.indices = []  # i, old_ind, new_ind, old_val, new_val
-        self.i = 0
 
         # this indicates rectangles that are about to be changed just before changing them
         Clock.schedule_once(self.call_indicating)
@@ -486,9 +487,7 @@ class MainScreen(BoxLayout):
         heapq._heapify_max(self.items)
         count = 0
         length = len(self.items)
-        self.indices = []
         self.heap_history = []
-        self.i = 0
 
         # call redrawing
         Clock.schedule_once(self.call_redrawing_heap)
@@ -517,6 +516,67 @@ class MainScreen(BoxLayout):
             unsorted_part.extend(sorted_part)
             self.items = unsorted_part
             new_ind -= 1
+
+
+indices = [] # i, old_ind, new_ind, old_val, new_val
+
+
+def quick_sort(unsorted_list, start_index=0, end_index=-1):
+    """
+    Quicksort algorithm augmented to also visualize the process.
+    :return: None
+    """
+    global indices
+
+    # recursively loop as long as the target range was not worked through yet
+    if end_index == -1:
+        end_index = len(unsorted_list) - 1
+    # recursively loop as long as the target range was not worked through yet
+    if start_index < end_index:
+        pivot = partition(unsorted_list, start_index, end_index)
+        quick_sort(unsorted_list, start_index, pivot)
+        quick_sort(unsorted_list, pivot + 1, end_index)
+
+    return indices
+
+
+def partition(unsorted_list, first_pointer, second_pointer):
+    """
+    Chooses the midpoint of the given range as pivot and uses the first and second pointers to execute
+    the Hoare-partitiion scheme.
+    Used by the quicksort function.
+    :param unsorted_list: list
+    :param first_pointer: int (beginning of sublist)
+    :param second_pointer: int (end of sublist)
+    :return: int (new pivot index)
+    """
+    global indices
+    middle_of_list = (first_pointer + second_pointer) // 2
+    pivot = unsorted_list[middle_of_list]
+
+    # left and right indices
+    i = first_pointer
+    j = second_pointer
+
+    while True:
+
+        while unsorted_list[i] < pivot:
+            i += 1
+        while unsorted_list[j] > pivot:
+            j -= 1
+
+        # if indices crossed, return pivot
+        if i >= j:
+            return j
+
+        # if indices have not crossed yet, swap elements
+        else:
+            indices.append((middle_of_list, i, j, unsorted_list[i], unsorted_list[j]))
+            store = unsorted_list[i]
+            unsorted_list[i] = unsorted_list[j]
+            unsorted_list[j] = store
+            i += 1
+            j -= 1
 
 
 class GuiApp(App):
