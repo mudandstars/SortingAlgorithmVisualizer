@@ -1,30 +1,43 @@
+"""
+Heapsort sorts a list by subdividing it into an unsorted and a sorted region. The former region is a heap and
+shrinks iteratively by having its root removed and inserted at the start of the sorted region.
+This is sort of an improved selection sort in so far as it finds the largest element more quickly in each step.
+"""
 
 import heapq
 
 
-def heapsort(unsorted_list):
+def heapsort(object):
     """
-    Heapsort sorts a list by subdividing it into an unsorted and a sorted region. The former region is a heap and
-    shrinks iteratively by having its root removed and inserted at the start of the sorted region.
-    This is sort of an improved selection sort in so far as it finds the largest element more quickly in each step.
-    :param unsorted_list: list (list to be sorted)
-    :return: None
+    Heapsort algorithm augmented to also visualize the process.
+    :return: List (indices and values of items to draw)
     """
-    heapq._heapify_max(unsorted_list)
+    heapq._heapify_max(object.items)
     count = 0
-    length = len(unsorted_list)
+    length = len(object.items)
+    heap_history = []
+    indices = []
+    new_ind = length - 1
+    object.is_heap_sort = True
 
     while count < length:
         count += 1
+        list_subdivision = length - count
+
+        unsorted_part = object.items[:list_subdivision + 1]
+        heap_history.append(unsorted_part)
+        indices.append((list_subdivision, 0, list_subdivision, object.items[0], object.items[list_subdivision]))
 
         # remove the biggest value and insert it at after the end of the unsorted part of the list
-        root = unsorted_list.pop(0)
-        unsorted_list.insert(-count + 1, root) if count > 1 else unsorted_list.append(root)
+        root = object.items.pop(0)
+        object.items.insert(new_ind, root)
 
         # subdivide list and and restore heap property of unsorted part before merging the lists back together
-        list_subdivision = length - count
-        unsorted_part = unsorted_list[:list_subdivision]
-        sorted_part = unsorted_list[list_subdivision:]
+        unsorted_part = object.items[:list_subdivision]
+        sorted_part = object.items[list_subdivision:]
         heapq._heapify_max(unsorted_part)
         unsorted_part.extend(sorted_part)
-        unsorted_list = unsorted_part
+        object.items = unsorted_part
+        new_ind -= 1
+
+    return indices, heap_history

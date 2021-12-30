@@ -1,4 +1,7 @@
 
+import drawing_flow
+from algorithms import *
+
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
@@ -17,6 +20,9 @@ import heapq
 window_sizes = Window.size
 colors = {"red": (1, 0, 0), "blue": (0, 0, 1), "green": (0, 1, 0)}
 
+# todo: fix merge_sort
+# todo: tidy up the file
+
 
 class MainScreen(BoxLayout):
 
@@ -32,12 +38,14 @@ class MainScreen(BoxLayout):
         self.algorithm_chosen = False
         self.selected_algorithm = None
         self.button_pressed = False
+        self.is_heap_sort = False
 
         # lists
         self.items = []
         self.rectangles = []
         self.labels = []
         self.indices = []  # (current_ind, old_ind, new_ind) for every change
+        self.heap_history = []
 
         # initialize standard values
         self.slider_value = 22.5
@@ -50,7 +58,7 @@ class MainScreen(BoxLayout):
         self.offset_x = 0
         self.i = 0
 
-        self.speed = 1
+        self.speed = .5
 
     def run_algorithm(self):
         """
@@ -67,19 +75,23 @@ class MainScreen(BoxLayout):
         self.i = 0
 
         if self.selected_algorithm == "Selection Sort":
-            return self.selection_sort()
+            self.indices = selection_sort.selection_sort(self)
+            drawing_flow.start_drawing(self)
         elif self.selected_algorithm == "Insertion Sort":
-            return self.insertion_sort()
+            self.indices = insertion_sort.insertion_sort(self)
+            drawing_flow.start_drawing(self)
         elif self.selected_algorithm == "Shellsort":
-            return self.shell_sort()
+            self.indices = shellsort.shell_sort(self)
+            drawing_flow.start_drawing(self)
         elif self.selected_algorithm == "Merge Sort":
-            return merge_sort(self.items)
+            self.indices, self.items = merge_sort.merge_sort(self.items)
+            drawing_flow.start_drawing(self)
         elif self.selected_algorithm == "Heapsort":
-            return self.heapsort()
+            self.indices, self.heap_history = heapsort.heapsort(self)
+            drawing_flow.start_drawing(self)
         elif self.selected_algorithm == "Quicksort":
-            self.indices = quick_sort(self.items)
-            Clock.schedule_once(self.call_indicating)
-            Clock.schedule_once(self.call_draw_change, self.speed / 2)
+            self.indices = quicksort.quick_sort(self.items)
+            drawing_flow.start_drawing(self)
 
     def slider_moved(self):
         """
@@ -114,8 +126,8 @@ class MainScreen(BoxLayout):
         self.data_spacing = int(50 / self.slider_value)
         self.font_size_items = int(9 + (9 - (self.slider_value ** 0.6))) if self.slider_value <= 25 else 0
         self.offset_x = self.width / 10
-        self.speed = 1 / self.slider_value
-        # todo: adjust speed
+        # set speed at an 'appropriate' level
+        self.speed = ((1 / self.slider_value) ** 2) * 5
 
     def reset_lists(self):
         """
@@ -254,34 +266,28 @@ class MainScreen(BoxLayout):
 
     def redraw_items(self, dt):
 
-        # disables the calling of the indicate_redrawing function in time
-        if self.i == len(self.indices):
-            self.unschedule_drawing()
+        n = len(self.heap_history[self.i])
+        offset = self.offset_x - self.width / 2
+        pos_x = int(self.width / 2 - self.data_width / 2 + offset)
+        blackbox_size_x = int(n * (self.data_width + self.data_spacing))
 
-        # if cancel condition is not met, continue
-        else:
-            n = len(self.heap_history[self.i])
-            offset = self.offset_x - self.width / 2
-            pos_x = int(self.width / 2 - self.data_width / 2 + offset)
-            blackbox_size_x = int(n * (self.data_width + self.data_spacing))
+        # redraw black screen
+        with self.canvas:
+            Color(0, 0, 0)
+            Rectangle(pos=(pos_x, self.start_pos_y), size=(blackbox_size_x, - 9 * self.standard_units))
 
-            # redraw black screen
-            with self.canvas:
-                Color(0, 0, 0)
-                Rectangle(pos=(pos_x, self.start_pos_y), size=(blackbox_size_x, - 9 * self.standard_units))
-
-            # draw rectangles and labels
-            with self.canvas:
-                for data_height in self.heap_history[self.i]:
-                    pos_x = int(self.width / 2 - self.data_width / 2 + offset)
-                    rectangle_size = (self.data_width, -dp(data_height))
-                    text_y = 8.4 * self.standard_units - dp(data_height)
-                    Color(0, 0, 1)
-                    self.rectangles.append(Rectangle(pos=(pos_x, self.start_pos_y), size=rectangle_size))
-                    self.labels.append(Label(pos=(pos_x, text_y), width=self.data_width,
-                                             height=dp(-5), text=str(data_height), font_size=self.font_size_items,
-                                             bold=True))
-                    offset += (self.data_width + self.data_spacing)
+        # draw rectangles and labels
+        with self.canvas:
+            for data_height in self.heap_history[self.i]:
+                pos_x = int(self.width / 2 - self.data_width / 2 + offset)
+                rectangle_size = (self.data_width, -dp(data_height))
+                text_y = 8.4 * self.standard_units - dp(data_height)
+                Color(0, 0, 1)
+                self.rectangles.append(Rectangle(pos=(pos_x, self.start_pos_y), size=rectangle_size))
+                self.labels.append(Label(pos=(pos_x, text_y), width=self.data_width,
+                                         height=dp(-5), text=str(data_height), font_size=self.font_size_items,
+                                         bold=True))
+                offset += (self.data_width + self.data_spacing)
 
     def color_all(self):
         """
@@ -315,11 +321,12 @@ class MainScreen(BoxLayout):
         :param dt: float (time interval that the function is called in)
         :return: None
         """
-        self.indicate_current_rect()
+        if self.i == len(self.indices):
+            drawing_flow.unschedule_drawing()
 
-        if self.i == len(self.indices) - 1:
-            self.unschedule_drawing()
         else:
+            self.indicate_current_rect()
+
             old_ind, new_ind, old_val, new_val = self.indices[self.i][1:]
 
             offset = (self.data_width + self.data_spacing)
@@ -335,33 +342,6 @@ class MainScreen(BoxLayout):
                 self.rectangles[old_ind] = Rectangle(pos=old_pos, size=old_size)
                 self.rectangles[new_ind] = Rectangle(pos=new_pos, size=new_size)
 
-    def unschedule_drawing(self):
-        Clock.unschedule(self.indicate_redrawing)
-        Clock.unschedule(self.draw_change())
-        self.draw_black_above_rectangles()
-        self.draw_done()
-        self.button_pressed = False
-
-    def call_draw_change(self, dt):
-        """
-        Method to call the drawing function. Necessary for Kivy time-dynamics-management.
-        :param dt: float (time interval that the function is called in)
-        :return: None
-        """
-        Clock.schedule_interval(self.draw_change, self.speed)
-
-    def call_redraw_items(self, dt):
-
-        Clock.schedule_interval(self.redraw_items, self.speed)
-
-    def call_indicating(self, dt):
-
-        Clock.schedule_interval(self.indicate_redrawing, self.speed)
-
-    def call_change_heap(self, dt):
-
-        Clock.schedule_interval(self.draw_change, self.speed)
-
     def switch_items(self, old_ind, new_ind):
         """
         Switches items' indices.
@@ -372,195 +352,6 @@ class MainScreen(BoxLayout):
         store = self.items[old_ind]
         self.items[old_ind] = self.items[new_ind]
         self.items[new_ind] = store
-
-    def selection_sort(self):
-        """
-        Selection sort algorithm that is augmented to also visualize the process.
-        :return: None
-        """
-        start_unsorted = 0
-
-        Clock.schedule_once(self.call_indicating)
-        Clock.schedule_once(self.call_draw_change, self.speed / 2)
-
-        while start_unsorted < len(self.items):
-            smallest_element = self.items[start_unsorted]
-            for i in range(start_unsorted + 1, len(self.items)):
-                if self.items[i] < smallest_element:
-                    self.indices.append((start_unsorted, start_unsorted, i, self.items[start_unsorted], self.items[i]))
-                    smallest_element = self.items[i]
-                    self.items[i] = self.items[start_unsorted]
-                    self.items[start_unsorted] = smallest_element
-
-            start_unsorted += 1
-
-    # todo: ends drawing process one step too early
-    # todo: still buggy when ending the process
-    # todo: implement merge sort
-
-    def insertion_sort(self):
-        """
-        Insertion sort algorithm that is augmented to also visualize the process.
-        :return: None
-        """
-        # this indicates rectangles that are about to be changed just before changing them
-        Clock.schedule_once(self.call_indicating)
-        Clock.schedule_once(self.call_draw_change, self.speed / 2)
-
-        i = 1
-        while i < len(self.items):
-            j = i
-            while j > 0 and self.items[j - 1] > self.items[j]:
-
-                self.indices.append((i, j - 1, j, self.items[j - 1], self.items[j]))
-
-                print(self.items)
-                print(self.indices[-1])
-                # swap elements if they are not in order
-                self.switch_items(j - 1, j)
-                # repeat for each element in the sorted list (left part of array)
-                j -= 1
-
-            # go one step to the right and repeat
-            i += 1
-
-    def shell_sort(self):
-        """
-        Shellsort algorithm augmented to also visualize the process.
-        :return: None
-        """
-        # use Ciura gap sequence
-        gaps = [701, 301, 132, 57, 23, 10, 4, 1]
-
-        # this indicates rectangles that are about to be changed just before changing them
-        Clock.schedule_once(self.call_indicating)
-        Clock.schedule_once(self.call_draw_change, self.speed / 2)
-
-        # start with largest gap and work down to gap of 1
-        for gap in gaps:
-            offset = 0
-            # offset is iterating through the list by 1 step at a time
-            while offset < gap:
-                i = offset
-                # i is iterating through the list, starting with offset and incremented by the gap-value every iteration
-                while i < len(self.items):
-                    # the current value of list[i] is saved temporarily
-                    temp = self.items[i]
-                    j = i
-                    # j starts at i and decreases by the gap-value each iteration.
-                    # j serves to shift earlier gap-sorted elements up until the correct location for list[i] is found
-                    while j >= gap and self.items[j - gap] > temp:
-
-                        self.indices.append((offset, j - gap, j, self.items[j- gap], self.items[j]))
-                        print(gap)
-                        print(self.items)
-                        print(self.indices[-1])
-
-                        self.items[j] = self.items[j - gap]
-                        j -= gap
-                        self.items[j] = temp
-
-                    i += gap
-                offset += 1
-
-    def heapsort(self):
-        """
-        Heapsort algorithm augmented to also visualize the process.
-        :return: None
-        """
-        heapq._heapify_max(self.items)
-        count = 0
-        length = len(self.items)
-        self.heap_history = []
-
-        # call redrawing
-        Clock.schedule_once(self.call_redraw_items)
-        # call indicating
-        Clock.schedule_once(self.call_indicating, self.speed/3)
-        # call change
-        Clock.schedule_once(self.call_change_heap, (2*self.speed)/3)
-
-        new_ind = length - 1
-        while count < length:
-            count += 1
-            list_subdivision = length - count
-
-            unsorted_part = self.items[:list_subdivision + 1]
-            self.heap_history.append(unsorted_part)
-            self.indices.append((list_subdivision, 0, list_subdivision, self.items[0], self.items[list_subdivision]))
-
-            # remove the biggest value and insert it at after the end of the unsorted part of the list
-            root = self.items.pop(0)
-            self.items.insert(new_ind, root)
-
-            # subdivide list and and restore heap property of unsorted part before merging the lists back together
-            unsorted_part = self.items[:list_subdivision]
-            sorted_part = self.items[list_subdivision:]
-            heapq._heapify_max(unsorted_part)
-            unsorted_part.extend(sorted_part)
-            self.items = unsorted_part
-            new_ind -= 1
-
-
-indices = [] # i, old_ind, new_ind, old_val, new_val
-
-
-def quick_sort(unsorted_list, start_index=0, end_index=-1):
-    """
-    Quicksort algorithm augmented to also visualize the process.
-    :return: None
-    """
-    global indices
-
-    # recursively loop as long as the target range was not worked through yet
-    if end_index == -1:
-        end_index = len(unsorted_list) - 1
-    # recursively loop as long as the target range was not worked through yet
-    if start_index < end_index:
-        pivot = partition(unsorted_list, start_index, end_index)
-        quick_sort(unsorted_list, start_index, pivot)
-        quick_sort(unsorted_list, pivot + 1, end_index)
-
-    return indices
-
-
-def partition(unsorted_list, first_pointer, second_pointer):
-    """
-    Chooses the midpoint of the given range as pivot and uses the first and second pointers to execute
-    the Hoare-partitiion scheme.
-    Used by the quicksort function.
-    :param unsorted_list: list
-    :param first_pointer: int (beginning of sublist)
-    :param second_pointer: int (end of sublist)
-    :return: int (new pivot index)
-    """
-    global indices
-    middle_of_list = (first_pointer + second_pointer) // 2
-    pivot = unsorted_list[middle_of_list]
-
-    # left and right indices
-    i = first_pointer
-    j = second_pointer
-
-    while True:
-
-        while unsorted_list[i] < pivot:
-            i += 1
-        while unsorted_list[j] > pivot:
-            j -= 1
-
-        # if indices crossed, return pivot
-        if i >= j:
-            return j
-
-        # if indices have not crossed yet, swap elements
-        else:
-            indices.append((middle_of_list, i, j, unsorted_list[i], unsorted_list[j]))
-            store = unsorted_list[i]
-            unsorted_list[i] = unsorted_list[j]
-            unsorted_list[j] = store
-            i += 1
-            j -= 1
 
 
 class GuiApp(App):
