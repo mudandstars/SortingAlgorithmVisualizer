@@ -11,25 +11,11 @@ from kivy.uix.label import Label
 from kivy.core.window import Window
 from kivy.clock import Clock
 from random import randint
-import time
-import threading
 
-import pdb
-import heapq
-
-window_sizes = Window.size
-colors = {"red": (1, 0, 0), "blue": (0, 0, 1), "green": (0, 1, 0)}
-
-# todo: fix merge_sort
-# todo: tidy up the file
+# todo: fix merge_sort - it still has wrong indices that are appended
 
 
 class MainScreen(BoxLayout):
-
-    # algorithms = {"Heapsort": self.heapsort(), "Insertion Sort": self.insertion_sort(),
-    #              "Selection Sort": self.selection_sort(), "Shellsort": self.shell_sort(),
-    #             "Merge Sort": self.merge_sort(),
-    #             "Quicksort": self.quick_sort()}
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -70,28 +56,28 @@ class MainScreen(BoxLayout):
         self.call_algorithm()
 
     def call_algorithm(self):
-
+        """
+        Calls the appropriate algorithm and the drawing procedure
+        :return: None
+        """
         self.indices = []
         self.i = 0
 
         if self.selected_algorithm == "Selection Sort":
             self.indices = selection_sort.selection_sort(self)
-            drawing_flow.start_drawing(self)
         elif self.selected_algorithm == "Insertion Sort":
             self.indices = insertion_sort.insertion_sort(self)
-            drawing_flow.start_drawing(self)
         elif self.selected_algorithm == "Shellsort":
             self.indices = shellsort.shell_sort(self)
-            drawing_flow.start_drawing(self)
         elif self.selected_algorithm == "Merge Sort":
-            self.indices, self.items = merge_sort.merge_sort(self.items)
-            drawing_flow.start_drawing(self)
+            self.indices, self.items = merge_sort.call_merge_sort(self.items)
+            print(self.items)
         elif self.selected_algorithm == "Heapsort":
             self.indices, self.heap_history = heapsort.heapsort(self)
-            drawing_flow.start_drawing(self)
         elif self.selected_algorithm == "Quicksort":
             self.indices = quicksort.quick_sort(self.items)
-            drawing_flow.start_drawing(self)
+
+        drawing_flow.start_drawing(self)
 
     def slider_moved(self):
         """
@@ -159,7 +145,8 @@ class MainScreen(BoxLayout):
                 Color(1, 1, 1)
                 self.rectangles.append(Rectangle(pos=(pos_x, self.start_pos_y), size=rectangle_size))
                 self.labels.append(Label(pos=(pos_x, text_y), width=self.data_width,
-                                         height=dp(-5), text=str(data_height), font_size=self.font_size_items, bold=True))
+                                         height=dp(-5), text=str(data_height), font_size=self.font_size_items,
+                                         bold=True))
                 offset += (self.data_width + self.data_spacing)
 
     def draw_change(self, dt=0):

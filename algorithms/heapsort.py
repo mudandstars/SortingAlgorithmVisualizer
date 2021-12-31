@@ -15,7 +15,7 @@ def heapsort(object):
     heapq._heapify_max(object.items)
     count = 0
     length = len(object.items)
-    heap_history = []
+    object.heap_history = []
     indices = []
     new_ind = length - 1
     object.is_heap_sort = True
@@ -25,7 +25,7 @@ def heapsort(object):
         list_subdivision = length - count
 
         unsorted_part = object.items[:list_subdivision + 1]
-        heap_history.append(unsorted_part)
+        object.heap_history.append(unsorted_part)
         indices.append((list_subdivision, 0, list_subdivision, object.items[0], object.items[list_subdivision]))
 
         # remove the biggest value and insert it at after the end of the unsorted part of the list
@@ -40,4 +40,4 @@ def heapsort(object):
         object.items = unsorted_part
         new_ind -= 1
 
-    return indices, heap_history
+    return indices
