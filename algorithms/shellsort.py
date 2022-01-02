@@ -8,6 +8,7 @@ making it a normal insertion sort at the end.
 def shell_sort(object):
     """
     Shellsort algorithm augmented to also visualize the process.
+    :param object: Instance of MainScreen class
     :return: List (indices and values of items to draw)
     """
     # use Ciura gap sequence

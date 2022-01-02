@@ -9,6 +9,7 @@ Sorts the list in place by inserting the current value in its designated space i
 def insertion_sort(object):
     """
     Insertion sort algorithm that is augmented to also visualize the process.
+    :param object: Instance of MainScreen class
     :return: List (indices and values of items to draw)
     """
     indices = []

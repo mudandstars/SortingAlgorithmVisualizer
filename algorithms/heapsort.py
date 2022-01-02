@@ -10,6 +10,7 @@ import heapq
 def heapsort(object):
     """
     Heapsort algorithm augmented to also visualize the process.
+    :param object: Instance of MainScreen class
     :return: List (indices and values of items to draw)
     """
     heapq._heapify_max(object.items)

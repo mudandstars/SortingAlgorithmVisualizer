@@ -11,6 +11,9 @@ indices = []
 def quick_sort(unsorted_list, start_index=0, end_index=-1):
     """
     Quicksort algorithm augmented to also visualize the process.
+    :param unsorted_list: List (unsorted items)
+    :param start_index: int (start index for quicksort)
+    :param end_index: int (end index for quicksort)
     :return: List (indices and values of items to draw)
     """
     global indices

@@ -1,6 +1,5 @@
 # SortingAlgorithmVisualizer
-Software that visually executes popular sorting algorithms in a graphical userface that allows for some interaction.
-- This project is still in work - 
+Software that visually executes popular sorting algorithms in a graphical user interface that allows for some interaction.
 
 # Intentions:
 - Learning popular sorting algorithms

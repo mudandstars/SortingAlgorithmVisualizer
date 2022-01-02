@@ -1,4 +1,7 @@
-
+"""
+The GUI component of the Sorting Algorithm Visualizer.
+This visualizes all functionalities and the drawing processes using kivy.
+"""
 import drawing_flow
 from algorithms import *
 
@@ -10,12 +13,23 @@ from kivy.graphics import Line, Color, Rectangle
 from kivy.uix.label import Label
 from kivy.core.window import Window
 from kivy.clock import Clock
+from kivy.uix.screenmanager import ScreenManager, Screen
 from random import randint
 
-# todo: fix merge_sort - it still has wrong indices that are appended
+
+class AlgorithmDatabase(Screen):
+    pass
 
 
-class MainScreen(BoxLayout):
+class WindowManager(ScreenManager):
+    pass
+
+
+class MainScreen(Screen):
+
+    shellsort_description = """Optimized insertion sort that allows the exchange of items that are far apart.
+                             Sorts the list in place by iteratively swapping elements, first very far apart and 
+                             eventually only 1 space apart, making it a normal insertion sort at the end."""
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -33,7 +47,7 @@ class MainScreen(BoxLayout):
         self.indices = []  # (current_ind, old_ind, new_ind) for every change
         self.heap_history = []
 
-        # initialize standard values
+        # initialize default values that will be changed according to slider values
         self.slider_value = 22.5
         self.item_counter = int(self.slider_value * 3)
         self.data_width = int(500 / self.slider_value)
@@ -41,10 +55,10 @@ class MainScreen(BoxLayout):
         self.font_size_items = int(9 + (9 - (self.slider_value ** 0.6))) if self.slider_value <= 25 else 0
         self.standard_units = dp(100)
         self.start_pos_y = int(8.5 * self.standard_units)
+        self.speed = .5
+
         self.offset_x = 0
         self.i = 0
-
-        self.speed = .5
 
     def run_algorithm(self):
         """
@@ -152,6 +166,7 @@ class MainScreen(BoxLayout):
     def draw_change(self, dt=0):
         """
         Visualizes the exchange of two items.
+        :param dt: float (time, required for Clock._ methods)
         :return: None
         """
         old_ind, new_ind, old_val, new_val = self.indices[self.i][1:]
@@ -252,7 +267,11 @@ class MainScreen(BoxLayout):
             Rectangle(pos=blackbox_pos, size=blackbox_size)
 
     def redraw_items(self, dt):
-
+        """
+        Redraws the items on the screen, in a different color.
+        :param dt: float (time, required for Clock._ methods)
+        :return: None
+        """
         n = len(self.heap_history[self.i])
         offset = self.offset_x - self.width / 2
         pos_x = int(self.width / 2 - self.data_width / 2 + offset)
@@ -343,7 +362,3 @@ class MainScreen(BoxLayout):
 
 class GuiApp(App):
     pass
-
-
-Window.maximize()
-GuiApp().run()

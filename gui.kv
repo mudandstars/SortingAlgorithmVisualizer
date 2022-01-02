@@ -1,82 +1,123 @@
-MainScreen:
+WindowManager:
+    MainScreen:
+    AlgorithmDatabase:
 
 #:set su dp(100)
 
-<MainScreen>:
-    orientation: 'vertical'
-    padding: .1*su
-    spacing: .005*su
-
-    canvas:
-        Color:
-            rgb: 1, 1, 1
-        Rectangle:
-            pos: 6.7*su, self.height - .11*su
-            size: .1*su, -.6*su
-        Color:
-            rgb: 1, 0, 0
-        Rectangle:
-            pos: 7.4*su, self.height - .11*su
-            size: .1*su, -.6*su
-        Color:
-            rgb: 0, 1, 0
-        Rectangle:
-            pos: 8.1*su, self.height - .11*su
-            size: .1*su, -.6*su
-        Color:
-            rgb: .5, .5, .5
-        Rectangle:
-            pos: 8.8*su, self.height - .11*su
-            size: .1*su, -.6*su
-
-    BoxLayout:
-        size_hint: 1, .1
-        orientation: 'horizontal'
-        Button:
-            text: "Algorithm\nDatabase"
-            size_hint: .1, 1
-
-        Spinner:
-            id: drop_down_menu
-            text: "Choose Algorithm"
-            values: ["Selection Sort", "Insertion Sort", "Shellsort", "Merge Sort", "Heapsort", "Quicksort"]
-            size_hint: .15, 1
-            on_text: root.drop_down_clicked(self.text)
-
-        Label:
-            size_hint: .15, 1
-
+<AlgorithmDatabase>:
+    name: "second"
+    ScrollView:
+        size_hint: 1, None
+        height: 10*su
+        do_scroll_x: False
+        do_scroll_y: True
+        scroll_distance: 40
 
         BoxLayout:
             orientation: 'vertical'
-            size_hint: .3, 1
+            padding: .05*su
+            spacing: .05*su
+            size_hint_y: 2
+
             BoxLayout:
-                size_hint: 1, .5
-                Label:
-                    text: "Small & Slow"
-                    font_size: 12
-                Label:
-                    text: "List Size & Sorting Speed"
-                    font_size: 22
-                Label:
-                    text: "Large & Fast"
-                    font_size: 12
-            Slider:
-                id: my_slider
                 orientation: 'horizontal'
-                min: 3
-                max: 45
-                value: 21
-                size_hint: 1, .5
-                on_value: root.slider_moved()
+                size_hint: 1, .12
 
-        Button:
-            id: run_algorithm_button
-            text: "Run Algorithm"
-            on_press: root.run_algorithm()
-            disabled: True
-            size_hint: .1, 1
+                Button:
+                    text: "Back to Main Menu"
+                    size_hint: .3, 1
+                    on_release:
+                        app.root.current = "first"
+                        root.manager.transition.direction = "left"
+            Label:
+                text: "I decided against adding such a text-based explication screen after all"
+                size_hint: 1, .12
+            Label:
+                text: "sorry"
+                size_hint: 1, .12
+                color: 1, 0, 1
 
-    AnchorLayout:
-        anchor_x: 'center'
-        anchor_y: 'bottom'
+<MainScreen>:
+    name: "first"
+
+    BoxLayout:
+        orientation: 'vertical'
+        padding: .1*su
+        spacing: .005*su
+
+        canvas:
+            Color:
+                rgb: 1, 1, 1
+            Rectangle:
+                pos: 6.7*su, self.height - .11*su
+                size: .1*su, -.6*su
+            Color:
+                rgb: 1, 0, 0
+            Rectangle:
+                pos: 7.4*su, self.height - .11*su
+                size: .1*su, -.6*su
+            Color:
+                rgb: 0, 1, 0
+            Rectangle:
+                pos: 8.1*su, self.height - .11*su
+                size: .1*su, -.6*su
+            Color:
+                rgb: .5, .5, .5
+            Rectangle:
+                pos: 8.8*su, self.height - .11*su
+                size: .1*su, -.6*su
+
+        BoxLayout:
+            size_hint: 1, .1
+            orientation: 'horizontal'
+            Button:
+                text: "Algorithm\nDatabase"
+                size_hint: .1, 1
+                on_release:
+                    app.root.current = "second"
+                    root.manager.transition.direction = "right"
+
+            Spinner:
+                id: drop_down_menu
+                text: "Choose Algorithm"
+                values: ["Selection Sort", "Insertion Sort", "Shellsort", "Merge Sort", "Heapsort", "Quicksort"]
+                size_hint: .15, 1
+                on_text: root.drop_down_clicked(self.text)
+
+            Label:
+                size_hint: .15, 1
+
+
+            BoxLayout:
+                orientation: 'vertical'
+                size_hint: .3, 1
+                BoxLayout:
+                    size_hint: 1, .5
+                    Label:
+                        text: "Small & Slow"
+                        font_size: 12
+                    Label:
+                        text: "List Size & Sorting Speed"
+                        font_size: 22
+                    Label:
+                        text: "Large & Fast"
+                        font_size: 12
+                Slider:
+                    id: my_slider
+                    orientation: 'horizontal'
+                    min: 3
+                    max: 45
+                    value: 21
+                    size_hint: 1, .5
+                    on_value: root.slider_moved()
+
+            Button:
+                id: run_algorithm_button
+                text: "Run Algorithm"
+                on_press: root.run_algorithm()
+                disabled: True
+                size_hint: .1, 1
+
+        AnchorLayout:
+            anchor_x: 'center'
+            anchor_y: 'bottom'

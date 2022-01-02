@@ -10,6 +10,7 @@ import math
 def selection_sort(object):
     """
     Selection sort algorithm that is augmented to also visualize the process.
+    :param object: Instance of MainScreen class
     :return: List (indices and values of items to draw)
     """
     start_unsorted = 0

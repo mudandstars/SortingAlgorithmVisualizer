@@ -8,25 +8,41 @@ main_object = None
 
 
 def call_draw_change(dt):
-
+    """
+    Calls the draw_change function in intervals at the appropriate speed.
+    :param dt: float (time, required for Clock._ functions)
+    :return: none
+    """
     global main_object
     Clock.schedule_interval(main_object.draw_change, main_object.speed)
 
 
 def call_redraw_items(dt):
-
+    """
+    Calls the redraw_items function in intervals at the appropriate speed.
+    :param dt: float (time, required for Clock._ functions)
+    :return: none
+    """
     global main_object
     Clock.schedule_interval(main_object.redraw_items, main_object.speed)
 
 
 def call_indicate_redrawing(dt):
-
+    """
+    Calls the indicate_redrawing function in intervals at the appropriate speed.
+    :param dt: float (time, required for Clock._ functions)
+    :return: none
+    """
     global main_object
     Clock.schedule_interval(main_object.indicate_redrawing, main_object.speed)
 
 
 def start_drawing(object):
-
+    """
+    Starts the drawing process.
+    :param object: Instance of MainScreen class
+    :return: none
+    """
     global main_object
     main_object = object
 
@@ -40,7 +56,10 @@ def start_drawing(object):
 
 
 def unschedule_drawing():
-
+    """
+    Unschedules the drawing process.
+    :return: none
+    """
     Clock.unschedule(main_object.indicate_redrawing)
     Clock.unschedule(main_object.draw_change)
 
